@@ -51,15 +51,45 @@
                 </StackPanel>
             </Border>
         </ContentControl>
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                <TextBox 
-                    DockPanel.Dock="Bottom" 
-                    x:Name="txtLog" 
-                    HorizontalAlignment="Stretch" 
-                    Height="300" 
-                    />
-            </ScrollViewer>
-            
+            <Grid DockPanel.Dock="Bottom">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="0.1*"/>
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Row="0" Grid.Column="0">Time</TextBlock>
+                <TextBlock Grid.Row="0" Grid.Column="1">From IP</TextBlock>
+                <TextBlock Grid.Row="0" Grid.Column="2">From Port</TextBlock>
+                <TextBlock Grid.Row="0" Grid.Column="3">To IP</TextBlock>
+                <TextBlock Grid.Row="0" Grid.Column="4">To Port</TextBlock>
+                <TextBlock Grid.Row="0" Grid.Column="5">Method</TextBlock>
+                <TextBlock Grid.Row="0" Grid.Column="6">Error</TextBlock>
+                <TextBlock Grid.Row="0" Grid.Column="7">ASCII</TextBlock>
+                <TextBlock Grid.Row="0" Grid.Column="8"> Hex</TextBlock>
+                <ScrollViewer 
+                    Grid.ColumnSpan="9"
+                    Grid.Column="0"
+                    Grid.Row="1"
+                    HorizontalScrollBarVisibility="Auto" 
+                    VerticalScrollBarVisibility="Auto">
+                    <TextBox 
+                        x:Name="txtLog" 
+                        HorizontalAlignment="Stretch" 
+                        Height="300" 
+                        />
+                </ScrollViewer>
+
+            </Grid>
         </DockPanel>
     </Grid>
 </Window>
