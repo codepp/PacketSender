@@ -63,7 +63,8 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="IpToStringConverter.cs" />
+    <Compile Include="Converters\BooleanToNegatedBooleanConverter.cs" />
+    <Compile Include="Converters\IpToStringConverter.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

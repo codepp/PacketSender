@@ -18,12 +18,14 @@ namespace ViewModels
         private readonly    IPAddress   m_RecipientAddr;
         private readonly    UInt16      m_RecipientPort;
 
+        //private readonly    DateTime    
         public Int32        NumBytesSent    => this.m_NumBytesSent;
         public String       PartialMessage  => this.m_PartialMessage;
         
         public IPAddress    IPAddress       => this.m_RecipientAddr;
         public UInt16       Port            => this.m_RecipientPort;
-        
+
+        //public DateTime     TimeSent => this.m_Time;
         public PartialMessageSentEventArgs ( String partialMessage, Int32 numBytesSent, UInt16 port, IPAddress addr )
         {
             this.m_NumBytesSent     = numBytesSent;
@@ -43,6 +45,17 @@ namespace ViewModels
 
         private Thread      m_SenderThread;
         private Boolean     m_IsSuspended;
+
+        private Boolean     IsSuspended
+        {
+            get             => this.m_IsSuspended;
+            set 
+            {
+                this.m_IsSuspended = value;
+                this.NotifyPropertyChanged( "IsSending" );
+
+            }
+        }
 
         public delegate void PartialMessageSentEventHandler ( object sender, PartialMessageSentEventArgs eArgs );
         public event PartialMessageSentEventHandler PartialMessageSent;
@@ -70,7 +83,7 @@ namespace ViewModels
         {
             get 
             {
-                return !this.m_IsSuspended;
+                return !this.IsSuspended;
 
             }
         }
@@ -109,7 +122,7 @@ namespace ViewModels
             while(true)
             {
 
-                if ( this.m_IsSuspended )
+                if ( this.IsSuspended )
                     continue;
 
                 IPEndPoint endpoint         = this.Recipient.GetEndpoint( );
@@ -121,6 +134,12 @@ namespace ViewModels
                         Byte [] bytes       = Encoding.ASCII.GetBytes( pc.Content );
                         Int32 numBytesSent  = this.m_Socket.SendTo( bytes, endpoint );
                         System.Diagnostics.Debug.Assert( bytes.Length == numBytesSent );
+
+                        if ( this.Message.PartDelayInterval != 0 )
+                        {
+                            Thread.Sleep( ( Int32 ) this.Message.PartDelayInterval );
+                            System.Diagnostics.Trace.TraceInformation( "Waiting for delay of {0} milliseconds", this.Message.PartDelayInterval );
+                        }
 
                         if (this.PartialMessageSent != null)
                         {
@@ -137,7 +156,7 @@ namespace ViewModels
 
                 Thread.Sleep( ( Int32 ) this.m_Message.RepeatInterval );
                 if ( !this.Message.IsRepeating )
-                    this.m_IsSuspended      = true;
+                    this.IsSuspended      = true;
             }
         }
 
@@ -204,13 +223,13 @@ namespace ViewModels
 
         public void Send()
         {
-            this.m_IsSuspended  = false;
+            this.IsSuspended  = false;
             this.NotifyPropertyChanged( "IsSending" );
         }
 
         public void StopSending()
         {
-            this.m_IsSuspended  = true;
+            this.IsSuspended  = true;
             this.NotifyPropertyChanged( "IsSending" );
         }
 

@@ -56,6 +56,7 @@ namespace ViewModels
         private ObservableCollection<PartialContent>m_Content;
         private UInt64      m_RepeatInterval;
         private Boolean     m_IsRepeating;
+        private UInt64      m_PartDelayTime;
 
         public ObservableCollection<PartialContent> Content
         {
@@ -84,6 +85,16 @@ namespace ViewModels
             {
                 this.m_IsRepeating      = value;
                 this.NotifyPropertyChanged( "IsRepeating" );
+            }
+        }
+
+        public UInt64 PartDelayInterval
+        {
+            get                         => this.m_PartDelayTime;
+            set 
+            {
+                this.m_PartDelayTime    = value;
+                this.NotifyPropertyChanged( "PartDelayInterval" );
             }
         }
 

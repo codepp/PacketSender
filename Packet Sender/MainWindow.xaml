@@ -11,6 +11,7 @@
         Title="MainWindow" Height="450" Width="800">
     <Window.Resources>
         <local:IpToStringConverter x:Key="ipToStringConverter" />
+        <local:BooleanToNegatedBooleanConverter x:Key="booleanToNegatedBooleanConverter" />
     </Window.Resources>
     <Window.DataContext>
         <vm:PacketSendViewModel />
@@ -38,14 +39,16 @@
                         <CheckBox x:Name="chkIsRepeating" IsChecked="{Binding Message.IsRepeating}" Margin="5, 5, 5, 5">Is Repeating</CheckBox>
                         <TextBox x:Name="txtRepeatInterval" Text="{Binding Message.RepeatInterval}" IsEnabled="{Binding Message.IsRepeating}" Margin="5, 5, 5, 5" />
                         <Label Margin="5, 0, 5, 5">Repeat Interval</Label>
-                        <Image Source="Resources\Button-Add-icon.png" Width="25" Height="25" MouseUp="BtnAddMessageContent_MouseUp" />
+                        <TextBox Margin="5, 5, 5, 5" x:Name="txtPartDelayInterval" Text="{Binding Message.PartDelayInterval}" />
+                            <Label Margin="5, 5, 5, 5" Content="Delay between parts" />
+                            <Image Source="Resources\Button-Add-icon.png" Width="25" Height="25" MouseUp="BtnAddMessageContent_MouseUp" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal">
                         <TextBox Text="{Binding Recipient.Address, Converter={StaticResource ipToStringConverter}}" Margin="5, 5, 5, 5" />
                         <TextBlock Margin="5, 5, 5, 5"> IP Address </TextBlock>
                         <TextBox Text="{Binding Recipient.PortNumber}" Margin="5, 5, 5, 5" />
                         <TextBlock Margin="5, 5, 5, 5"> Port </TextBlock>
-                        <Button Margin="5, 5, 5, 5" Width="50" x:Name="btnSend" Click="BtnSend_Click"> Send </Button>
+                            <Button Margin="5, 5, 5, 5" Width="50" x:Name="btnSend" Click="BtnSend_Click" IsEnabled="{Binding IsSending, Converter={StaticResource booleanToNegatedBooleanConverter}}"> Send </Button>
                         <Button Margin="5, 5, 5, 5" Width="90" x:Name="btnStopSending" Click="BtnStopSend_Click" IsEnabled="{Binding IsSending}">Stop Sending</Button>
                         </StackPanel>
                 </StackPanel>
