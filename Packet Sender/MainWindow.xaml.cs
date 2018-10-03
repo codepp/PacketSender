@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Model;
 using ViewModels;
 
 using ViewModel = ViewModels.PacketSendViewModel;
@@ -46,11 +47,10 @@ namespace Packet_Sender
 
         private void Vm_PartialMessageSent ( Object sender, PartialMessageSentEventArgs eArgs )
         {
-            String message          = String.Format("Sent {0} bytes of message {1} at {2}:{3}", eArgs.NumBytesSent, eArgs.PartialMessage, eArgs.IPAddress, eArgs.Port);
+            String message          = String.Format( "[{4}]Sent {0} bytes of message {1} at {2}:{3}", eArgs.NumBytesSent, eArgs.PartialMessage, eArgs.IPAddress, eArgs.Port, DateTime.Now );
             this.txtLog.Dispatcher.Invoke( ( ) => 
             {
-                this.txtLog.AppendText( message );
-                this.txtLog.AppendText( "\r\n" );
+                this.txtLog.Text += message += "\r\n";
             } );
 
             Console.WriteLine( message );
@@ -101,12 +101,12 @@ namespace Packet_Sender
 
         private void BtnSend_Click ( Object sender, RoutedEventArgs e )
         {
-            Button btn                  = sender as Button;
+            Button btn      = sender as Button;
             System.Diagnostics.Debug.Assert( btn != null );
             if ( btn == null )
                 goto end;
 
-            ViewModel vm = this.ViewModel;
+            ViewModel vm    = this.ViewModel;
             if ( vm == null )
                 goto end;
 
@@ -124,6 +124,28 @@ namespace Packet_Sender
         private void Window_Closing ( Object sender, System.ComponentModel.CancelEventArgs e )
         {
             this.ViewModel.Dispose( );
+        }
+
+        private void RadioProtocolChecked ( Object sender, RoutedEventArgs e )
+        {
+            ConnectionType selectedType = ConnectionType.Unused;
+
+            if ( sender == this.rbUdp )
+                selectedType            = ConnectionType.UDP;
+            else if ( sender == this.rbTcp )
+                selectedType            = ConnectionType.TCP;
+
+            System.Diagnostics.Debug.Assert( selectedType != ConnectionType.Unused );
+            if ( selectedType == ConnectionType.Unused )
+                goto end;
+
+            ViewModel vm                = this.ViewModel;
+            System.Diagnostics.Debug.Assert( vm != null );
+
+            vm.SwitchConnectionType( selectedType );
+
+            end:
+            return;
         }
     }
 }

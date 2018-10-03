@@ -28,7 +28,7 @@ namespace ViewModels
             set 
             {
                 this.m_Address                  = value;
-                this.NotifyPropertyChanged("Address");
+                this.NotifyPropertyChanged( "Address" );
             }
         }
 
@@ -41,7 +41,7 @@ namespace ViewModels
             set 
             {
                 this.m_PortNumber               = value;
-                this.NotifyPropertyChanged("PortNumber");
+                this.NotifyPropertyChanged( "PortNumber" );
             }
         }
 
@@ -62,22 +62,44 @@ namespace ViewModels
             set
             {
                 this.m_ConnectionType           = value;
-                this.NotifyPropertyChanged("ConnectionType");
+                this.NotifyPropertyChanged( "ConnectionType" );
+                this.NotifyPropertyChanged( "IsConnectionTcp" );
+                this.NotifyPropertyChanged( "IsConnectionUdp" );
             }
         }
 
-        public Recipient(IPAddress ipAddress, UInt16 port)
+        public Boolean IsConnectionTcp
+        {
+            get                                 => ( this.ConnectionType == ConnectionType.TCP );
+            set 
+            {
+                if ( value )
+                    this.ConnectionType         = ConnectionType.TCP;
+            }
+        }
+
+        public Boolean IsConnectionUdp
+        {
+            get                                 => ( this.ConnectionType == ConnectionType.UDP );
+            set 
+            {
+                if ( value )
+                    this.ConnectionType         = ConnectionType.UDP;
+            }
+        }
+
+        public Recipient( IPAddress ipAddress, UInt16 port )
         {
             this.Address                        = ipAddress;
             this.PortNumber                     = port;
         }
 
-        private void NotifyPropertyChanged(String propertyName)
+        private void NotifyPropertyChanged( String propertyName )
         {
-            if (this.PropertyChanged != null)
+            if ( this.PropertyChanged != null )
             {
-                PropertyChangedEventArgs eA     = new PropertyChangedEventArgs(propertyName);
-                this.PropertyChanged(this, eA);
+                PropertyChangedEventArgs eA     = new PropertyChangedEventArgs( propertyName );
+                this.PropertyChanged( this, eA );
             }
         }
     }

@@ -7,6 +7,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Model;
 
 namespace ViewModels
 {
@@ -38,7 +39,6 @@ namespace ViewModels
     public class PacketSendViewModel : INotifyPropertyChanged, IDisposable
     {
         private Socket      m_Socket;
-        private Boolean     m_IsConnected;
         
         private Message     m_Message;
         private Recipient   m_Recipient;
@@ -57,8 +57,10 @@ namespace ViewModels
             }
         }
 
-        public delegate void PartialMessageSentEventHandler ( object sender, PartialMessageSentEventArgs eArgs );
-        public event PartialMessageSentEventHandler PartialMessageSent;
+        private readonly Object m_SocketThreadLock = new Object();
+
+        public  event           PartialMessageSentEventHandler PartialMessageSent;
+        public  delegate void   PartialMessageSentEventHandler ( object sender, PartialMessageSentEventArgs eArgs );
         public Message Message
         {
             get                     => this.m_Message;
@@ -90,13 +92,18 @@ namespace ViewModels
 
         private void InitSenderThread ( )
         {
-            this.m_SenderThread     = new Thread( ( ) =>
+            this.IsSuspended        = true;
+            this.m_SenderThread = new Thread( ( ) =>
             {
                 this.PerformSendMessage( );
             } );
 
             this.m_SenderThread.Start( );
 
+        }
+
+        private void InitSocket ( )
+        {
             AddressFamily?   addrFamily     = null;
             SocketType?      sockType       = null;
             ProtocolType?    protocolType   = null;
@@ -108,12 +115,19 @@ namespace ViewModels
                     protocolType    = ProtocolType.Udp;
                     sockType        = SocketType.Dgram;
                     break;
+                case Model.ConnectionType.TCP:
+                    addrFamily      = AddressFamily.InterNetwork;
+                    protocolType    = ProtocolType.Tcp;
+                    sockType        = SocketType.Stream;
+                    break;
                 default:
                     break;
             }
 
 
             this.m_Socket           = new Socket( addrFamily.Value, sockType.Value, protocolType.Value );
+            if ( this.m_Recipient.ConnectionType == ConnectionType.TCP )
+                this.m_Socket.SetSocketOption( SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true );
         }
 
         private void PerformSendMessage ( )
@@ -125,14 +139,28 @@ namespace ViewModels
                 if ( this.IsSuspended )
                     continue;
 
+                Int32 numBytesSent          = -1;
                 IPEndPoint endpoint         = this.Recipient.GetEndpoint( );
 
                 try
                 {
                     foreach ( PartialContent pc in this.Message.Content )
                     {
-                        Byte [] bytes       = Encoding.ASCII.GetBytes( pc.Content );
-                        Int32 numBytesSent  = this.m_Socket.SendTo( bytes, endpoint );
+                        StringBuilder buff  = new StringBuilder( pc.Content );
+                        if ( this.Message.AppendNewLine )
+                            buff.Append( "\r\n" );
+
+                        Byte [] bytes       = Encoding.ASCII.GetBytes( buff.ToString( ) );
+                        lock (this.m_SocketThreadLock)
+                        {
+                            if (this.Recipient.IsConnectionTcp && !this.m_Socket.Connected)
+                            {
+                                this.m_Socket.Connect( endpoint );
+                            }
+
+                            numBytesSent    = this.m_Socket.SendTo( bytes, endpoint );
+                        }
+
                         System.Diagnostics.Debug.Assert( bytes.Length == numBytesSent );
 
                         if ( this.Message.PartDelayInterval != 0 )
@@ -162,9 +190,15 @@ namespace ViewModels
 
         public PacketSendViewModel ( Message message, Recipient recipient )
         {
-            this.Message        = message;
-            this.Recipient      = recipient;
+            this.Message    = message;
+            this.Recipient  = recipient;
+            this.InitSystemResources( );
 
+        }
+
+        private void InitSystemResources ( )
+        {
+            this.InitSocket( );
             this.InitSenderThread( );
 
         }
@@ -179,7 +213,8 @@ namespace ViewModels
             this.AddPartialContent( "Test message" );
             this.AddPartialContent( "Second test message" );
 
-            this.InitSenderThread( );
+            this.InitSystemResources( );
+
         }
 
         public Boolean AddPartialContent( String partialContent )
@@ -224,13 +259,31 @@ namespace ViewModels
         public void Send()
         {
             this.IsSuspended  = false;
-            this.NotifyPropertyChanged( "IsSending" );
         }
 
         public void StopSending()
         {
             this.IsSuspended  = true;
-            this.NotifyPropertyChanged( "IsSending" );
+        }
+
+        public async Task SwitchConnectionType ( ConnectionType newConnectionType )
+        {
+            System.Diagnostics.Debug.Assert( newConnectionType != ConnectionType.Unused );
+            if ( newConnectionType == ConnectionType.Unused )
+                goto end;
+
+            Boolean wasSuspended            = this.IsSuspended;
+            this.IsSuspended                = true;
+            lock( this.m_SocketThreadLock )
+            {
+                this.m_Socket.Dispose( );
+                this.InitSocket( );
+
+            }
+            this.IsSuspended                = wasSuspended;
+
+            end:
+            return;
         }
 
         public void Dispose()

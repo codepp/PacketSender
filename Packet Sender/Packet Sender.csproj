@@ -101,6 +101,10 @@
       <Project>{a8edfbee-7c4f-4a3d-94fc-791bcb9e3d2d}</Project>
       <Name>ViewModels</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Model\Model.csproj">
+      <Project>{AE4D3741-36FA-4D3B-B83B-72E35C1E858C}</Project>
+      <Name>Model</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\Button-Add-icon.png" />

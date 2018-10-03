@@ -18,6 +18,7 @@
     </Window.DataContext>
     <Grid OpacityMask="#FFF7F7F7" Background="#FFFBF8F8">
         <DockPanel>
+            <!-- Message content strip -->
             <ContentControl DockPanel.Dock="Top">
             <Border BorderBrush="#FFF7EDED" BorderThickness="5, 5, 5, 5">
                 <StackPanel Orientation="Vertical" x:Name="pnlMessageEditor" Height="{Binding ActualHeight}">
@@ -35,25 +36,33 @@
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                     </ListBox>
+                    <!-- Message control strip -->
                     <StackPanel Orientation="Horizontal">
+                        <CheckBox x:Name="chkAppendCrLf" Margin="5, 5, 5, 5" IsChecked="{Binding Message.AppendNewLine}">Append Cr\Lf</CheckBox>
                         <CheckBox x:Name="chkIsRepeating" IsChecked="{Binding Message.IsRepeating}" Margin="5, 5, 5, 5">Is Repeating</CheckBox>
                         <TextBox x:Name="txtRepeatInterval" Text="{Binding Message.RepeatInterval}" IsEnabled="{Binding Message.IsRepeating}" Margin="5, 5, 5, 5" />
                         <Label Margin="5, 0, 5, 5">Repeat Interval</Label>
                         <TextBox Margin="5, 5, 5, 5" x:Name="txtPartDelayInterval" Text="{Binding Message.PartDelayInterval}" />
-                            <Label Margin="5, 5, 5, 5" Content="Delay between parts" />
-                            <Image Source="Resources\Button-Add-icon.png" Width="25" Height="25" MouseUp="BtnAddMessageContent_MouseUp" />
-                    </StackPanel>
+                        <Label Margin="5, 5, 5, 5" Content="Delay between parts" />
+                        <Image Source="Resources\Button-Add-icon.png" Width="25" Height="25" MouseUp="BtnAddMessageContent_MouseUp" />
+                        </StackPanel>
+                    <!-- Connection strip-->
                     <StackPanel Orientation="Horizontal">
                         <TextBox Text="{Binding Recipient.Address, Converter={StaticResource ipToStringConverter}}" Margin="5, 5, 5, 5" />
                         <TextBlock Margin="5, 5, 5, 5"> IP Address </TextBlock>
                         <TextBox Text="{Binding Recipient.PortNumber}" Margin="5, 5, 5, 5" />
                         <TextBlock Margin="5, 5, 5, 5"> Port </TextBlock>
-                            <Button Margin="5, 5, 5, 5" Width="50" x:Name="btnSend" Click="BtnSend_Click" IsEnabled="{Binding IsSending, Converter={StaticResource booleanToNegatedBooleanConverter}}"> Send </Button>
+                        <Button Margin="5, 5, 5, 5" Width="50" x:Name="btnSend" Click="BtnSend_Click" IsEnabled="{Binding IsSending, Converter={StaticResource booleanToNegatedBooleanConverter}}"> Send </Button>
                         <Button Margin="5, 5, 5, 5" Width="90" x:Name="btnStopSending" Click="BtnStopSend_Click" IsEnabled="{Binding IsSending}">Stop Sending</Button>
-                        </StackPanel>
+                        <RadioButton x:Name="rbUdp" Margin="5, 5, 5, 5" GroupName="rbConnectionProtocol" IsChecked="{Binding Recipient.IsConnectionUdp}" Checked="RadioProtocolChecked" />
+                        <TextBlock Text="UDP" Margin="5, 5, 5, 5" />
+                        <RadioButton x:Name="rbTcp" Margin="5, 5, 5, 5" GroupName="rbConnectionProtocol" IsChecked="{Binding Recipient.IsConnectionTcp}" Checked="RadioProtocolChecked" />
+                        <TextBlock Text="TCP" Margin="5, 5, 5, 5" />
+                    </StackPanel>
                 </StackPanel>
             </Border>
         </ContentControl>
+            <!-- Log console -->
             <Grid DockPanel.Dock="Bottom">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="0.1*"/>
@@ -84,11 +93,12 @@
                     Grid.Column="0"
                     Grid.Row="1"
                     HorizontalScrollBarVisibility="Auto" 
-                    VerticalScrollBarVisibility="Auto">
+                    VerticalScrollBarVisibility="Auto"
+                    Name="scrollTextLog">
                     <TextBox 
                         x:Name="txtLog" 
                         HorizontalAlignment="Stretch" 
-                        Height="300" 
+                        Height="300"
                         />
                 </ScrollViewer>
 

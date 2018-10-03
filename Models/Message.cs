@@ -57,6 +57,7 @@ namespace ViewModels
         private UInt64      m_RepeatInterval;
         private Boolean     m_IsRepeating;
         private UInt64      m_PartDelayTime;
+        private Boolean     m_AppendCrLf;
 
         public ObservableCollection<PartialContent> Content
         {
@@ -101,6 +102,16 @@ namespace ViewModels
         public Boolean HasContent
         {
             get                         => ( this.Content.Count != 0 );
+        }
+
+        public Boolean AppendNewLine
+        {
+            get                         => this.m_AppendCrLf;
+            set 
+            {
+                this.m_AppendCrLf       = value;
+                this.NotifyPropertyChanged( "AppendNewLine" );
+            }
         }
 
         public Message(UInt64 repeatInterval, Boolean isRepeating)
