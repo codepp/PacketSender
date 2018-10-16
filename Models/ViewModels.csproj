@@ -41,7 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Utils\String Extensions.cs" />
     <Compile Include="Message.cs" />
+    <Compile Include="MessageLogViewModel.cs" />
     <Compile Include="PacketSendViewModel.cs" />
     <Compile Include="Recipient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

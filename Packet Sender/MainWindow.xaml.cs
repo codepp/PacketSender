@@ -43,15 +43,24 @@ namespace Packet_Sender
 
             ViewModel vm            = this.ViewModel;
             vm.PartialMessageSent   += this.Vm_PartialMessageSent;
+            vm.MessageLogAdded += this.Vm_MessageLogAdded;
+        }
+
+        private void Vm_MessageLogAdded ( Object sender, MessageLogCreatedEventArgs eArgs )
+        {
+            this.lbxLog.Dispatcher.Invoke( ( ) => 
+            {
+                this.ViewModel.Log.Add( eArgs.log );
+            });
         }
 
         private void Vm_PartialMessageSent ( Object sender, PartialMessageSentEventArgs eArgs )
         {
             String message          = String.Format( "[{4}]Sent {0} bytes of message {1} at {2}:{3}", eArgs.NumBytesSent, eArgs.PartialMessage, eArgs.IPAddress, eArgs.Port, DateTime.Now );
-            this.txtLog.Dispatcher.Invoke( ( ) => 
-            {
-                this.txtLog.Text += message += "\r\n";
-            } );
+            //this.txtLog.Dispatcher.Invoke( ( ) => 
+            //{
+                //this.txtLog.Text += message += "\r\n";
+            //} );
 
             Console.WriteLine( message );
         }

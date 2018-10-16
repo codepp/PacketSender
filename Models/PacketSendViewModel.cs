@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Net;
@@ -36,6 +37,13 @@ namespace ViewModels
             this.m_RecipientPort    = port;
         }
     }
+
+    public class MessageLogCreatedEventArgs
+    {
+        public Object sender;
+        public MessageLogViewModel log;
+    }
+
     public class PacketSendViewModel : INotifyPropertyChanged, IDisposable
     {
         private Socket      m_Socket;
@@ -46,6 +54,9 @@ namespace ViewModels
         private Thread      m_SenderThread;
         private Boolean     m_IsSuspended;
 
+
+        private ObservableCollection<MessageLogViewModel> m_MessageLog;
+        
         private Boolean     IsSuspended
         {
             get             => this.m_IsSuspended;
@@ -61,6 +72,10 @@ namespace ViewModels
 
         public  event           PartialMessageSentEventHandler PartialMessageSent;
         public  delegate void   PartialMessageSentEventHandler ( object sender, PartialMessageSentEventArgs eArgs );
+
+        public  event           MessageLogAddedEventHandler     MessageLogAdded;
+        public  delegate void   MessageLogAddedEventHandler ( object sender, MessageLogCreatedEventArgs eArgs );
+
         public Message Message
         {
             get                     => this.m_Message;
@@ -87,6 +102,16 @@ namespace ViewModels
             {
                 return !this.IsSuspended;
 
+            }
+        }
+
+        public ObservableCollection<MessageLogViewModel> Log
+        {
+            get                     => this.m_MessageLog;
+            set 
+            {
+                this.m_MessageLog   = value;
+                this.NotifyPropertyChanged( "Log" );
             }
         }
 
@@ -142,23 +167,37 @@ namespace ViewModels
                 Int32 numBytesSent          = -1;
                 IPEndPoint endpoint         = this.Recipient.GetEndpoint( );
 
-                try
+                
+                MessageLogViewModel messageLog  = new MessageLogViewModel
                 {
-                    foreach ( PartialContent pc in this.Message.Content )
+                    Content         = null,
+                    Error           = "NONE",
+                    Method          = this.Recipient.IsConnectionTcp ? "TCP" : "UDP",
+                    Recipient       = this.Recipient.Address,
+                    RecipientPort   = this.Recipient.PortNumber,
+                    Sender          = IPAddress.Parse("127.0.0.1"),
+                    SenderPort      = 012345,
+                    Time            = DateTime.Now
+                };
+
+                foreach ( PartialContent pc in this.Message.Content )
+                {
+                    try
                     {
                         StringBuilder buff  = new StringBuilder( pc.Content );
                         if ( this.Message.AppendNewLine )
                             buff.Append( "\r\n" );
 
+                        messageLog.Content = pc.Content;
                         Byte [] bytes       = Encoding.ASCII.GetBytes( buff.ToString( ) );
-                        lock (this.m_SocketThreadLock)
+                        lock ( this.m_SocketThreadLock )
                         {
-                            if (this.Recipient.IsConnectionTcp && !this.m_Socket.Connected)
+                            if ( this.Recipient.IsConnectionTcp && !this.m_Socket.Connected )
                             {
                                 this.m_Socket.Connect( endpoint );
                             }
 
-                            numBytesSent    = this.m_Socket.SendTo( bytes, endpoint );
+                            numBytesSent = this.m_Socket.SendTo( bytes, endpoint );
                         }
 
                         System.Diagnostics.Debug.Assert( bytes.Length == numBytesSent );
@@ -169,17 +208,31 @@ namespace ViewModels
                             System.Diagnostics.Trace.TraceInformation( "Waiting for delay of {0} milliseconds", this.Message.PartDelayInterval );
                         }
 
-                        if (this.PartialMessageSent != null)
+                        if ( this.PartialMessageSent != null )
                         {
                             PartialMessageSentEventArgs eArgs = new PartialMessageSentEventArgs ( pc.Content, numBytesSent, ( UInt16 ) endpoint.Port, endpoint.Address );
                             this.PartialMessageSent( this, eArgs );
 
                         }
                     }
-                }
-                catch ( Exception e )
-                {
-                    System.Diagnostics.Trace.TraceError( e.Message );
+                    catch (Exception e)
+                    {
+                        messageLog.Error = e.Message;
+                        System.Diagnostics.Trace.TraceError( e.Message );
+                    }
+                    finally
+                    {
+                        if (this.MessageLogAdded != null)
+                        {
+                            MessageLogCreatedEventArgs eArgsModel = new MessageLogCreatedEventArgs
+                            {
+                                sender = this,
+                                log = messageLog
+                            };
+                            this.MessageLogAdded( this, eArgsModel );
+                        }
+                    }
+                        
                 }
 
                 Thread.Sleep( ( Int32 ) this.m_Message.RepeatInterval );
@@ -193,6 +246,7 @@ namespace ViewModels
             this.Message    = message;
             this.Recipient  = recipient;
             this.InitSystemResources( );
+            this.Log        = new ObservableCollection<MessageLogViewModel> ( );
 
         }
 
@@ -213,6 +267,7 @@ namespace ViewModels
             this.AddPartialContent( "Test message" );
             this.AddPartialContent( "Second test message" );
 
+            this.Log                        = new ObservableCollection<MessageLogViewModel>( );
             this.InitSystemResources( );
 
         }

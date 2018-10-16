@@ -20,7 +20,7 @@ namespace Packet_Sender
             System.Net.IPAddress addr   = null;
             Boolean hasParsed           = System.Net.IPAddress.TryParse( value.ToString( ), out addr );
 
-            return null;
+            return addr;
         }
     }
 
