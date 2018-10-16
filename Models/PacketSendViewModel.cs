@@ -176,7 +176,7 @@ namespace ViewModels
                     Recipient       = this.Recipient.Address,
                     RecipientPort   = this.Recipient.PortNumber,
                     Sender          = IPAddress.Parse("127.0.0.1"),
-                    SenderPort      = 012345,
+                    SenderPort      = 0,
                     Time            = DateTime.Now
                 };
 
@@ -198,31 +198,31 @@ namespace ViewModels
                             }
 
                             numBytesSent = this.m_Socket.SendTo( bytes, endpoint );
-                        }
 
-                        System.Diagnostics.Debug.Assert( bytes.Length == numBytesSent );
+                            System.Diagnostics.Debug.Assert( bytes.Length == numBytesSent );
 
-                        if ( this.Message.PartDelayInterval != 0 )
-                        {
-                            Thread.Sleep( ( Int32 ) this.Message.PartDelayInterval );
-                            System.Diagnostics.Trace.TraceInformation( "Waiting for delay of {0} milliseconds", this.Message.PartDelayInterval );
-                        }
+                            if ( this.Message.PartDelayInterval != 0 )
+                            {
+                                Thread.Sleep( ( Int32 ) this.Message.PartDelayInterval );
+                                System.Diagnostics.Trace.TraceInformation( "Waiting for delay of {0} milliseconds", this.Message.PartDelayInterval );
+                            }
 
-                        if ( this.PartialMessageSent != null )
-                        {
-                            PartialMessageSentEventArgs eArgs = new PartialMessageSentEventArgs ( pc.Content, numBytesSent, ( UInt16 ) endpoint.Port, endpoint.Address );
-                            this.PartialMessageSent( this, eArgs );
+                            if ( this.PartialMessageSent != null )
+                            {
+                                PartialMessageSentEventArgs eArgs = new PartialMessageSentEventArgs ( pc.Content, numBytesSent, ( UInt16 ) endpoint.Port, endpoint.Address );
+                                this.PartialMessageSent( this, eArgs );
 
+                            }
                         }
                     }
-                    catch (Exception e)
+                    catch ( Exception e )
                     {
                         messageLog.Error = e.Message;
                         System.Diagnostics.Trace.TraceError( e.Message );
                     }
                     finally
                     {
-                        if (this.MessageLogAdded != null)
+                        if ( this.MessageLogAdded != null )
                         {
                             MessageLogCreatedEventArgs eArgsModel = new MessageLogCreatedEventArgs
                             {

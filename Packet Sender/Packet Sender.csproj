@@ -109,5 +109,8 @@
   <ItemGroup>
     <Resource Include="Resources\Button-Add-icon.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\crate.ico" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

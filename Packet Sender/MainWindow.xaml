@@ -7,8 +7,9 @@
         xmlns:vm="clr-namespace:ViewModels;assembly=ViewModels"
         mc:Ignorable="d"
         Closing="Window_Closing"
+        Icon="Resources\crate.ico"
         Background="WhiteSmoke"
-        Title="Packet Sender" Height="450" Width="800">
+        Title="Packet Sender © Sourcery" Height="450" Width="800">
     <Window.Resources>
         <local:IpToStringConverter x:Key="ipToStringConverter" />
         <local:BooleanToNegatedBooleanConverter x:Key="booleanToNegatedBooleanConverter" />
